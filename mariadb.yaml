@@ -1,0 +1,80 @@
+# -----------------------------
+# PVC MariaDB (1 Go)
+# -----------------------------
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mariadb-pvc
+  namespace: logiciel-tp4
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+# -----------------------------
+# Secret du mot de passe MariaDB
+# -----------------------------
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mariadb-secret
+  namespace: logiciel-tp4
+type: Opaque
+data:
+  # echo -n "monPass" | base64  ->  bW9uUGFzcw==
+  MYSQL_ROOT_PASSWORD: bW9uUGFzcw==
+---
+# -----------------------------
+# Deployment MariaDB
+# -----------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mariadb
+  namespace: logiciel-tp4
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mariadb
+  template:
+    metadata:
+      labels:
+        app: mariadb
+    spec:
+      containers:
+      - name: mariadb
+        image: mariadb:11
+        ports:
+        - containerPort: 3306
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mariadb-secret
+              key: MYSQL_ROOT_PASSWORD
+        volumeMounts:
+        - name: mariadb-storage
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: mariadb-storage
+        persistentVolumeClaim:
+          claimName: mariadb-pvc
+---
+# -----------------------------
+# Service MariaDB (ClusterIP)
+# -----------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: mariadb-service
+  namespace: logiciel-tp4
+spec:
+  selector:
+    app: mariadb
+  ports:
+    - port: 3306
+      targetPort: 3306
+  type: ClusterIP

@@ -26,8 +26,21 @@ spec:
         - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: db-secret
-              key: DB_PASSWORD
+              name: mariadb-secret
+              key: MYSQL_ROOT_PASSWORD
+
+        - name: DB_USERNAME
+          value: "root"
+
+        - name: DB_HOST
+          value: "mariadb-service"
+
+        - name: DB_PORT
+          value: "3306"
+
+        - name: DB_NAME
+          value: "todo_db"
+
         volumeMounts:
         - name: data-storage
           mountPath: /data
