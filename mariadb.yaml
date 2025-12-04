@@ -1,6 +1,6 @@
-# -----------------------------
-# PVC MariaDB (1 Go)
-# -----------------------------
+# ========================================================
+# PersistentVolumeClaim MariaDB
+# ========================================================
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -8,27 +8,14 @@ metadata:
   namespace: logiciel-tp4
 spec:
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteOnce 
   resources:
     requests:
       storage: 1Gi
 ---
-# -----------------------------
-# Secret du mot de passe MariaDB
-# -----------------------------
-apiVersion: v1
-kind: Secret
-metadata:
-  name: mariadb-secret
-  namespace: logiciel-tp4
-type: Opaque
-data:
-  # echo -n "monPass" | base64  ->  bW9uUGFzcw==
-  MYSQL_ROOT_PASSWORD: bW9uUGFzcw==
----
-# -----------------------------
-# Deployment MariaDB
-# -----------------------------
+# ========================================================
+# Deployment MariaDB simplifié
+# ========================================================
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -55,6 +42,8 @@ spec:
             secretKeyRef:
               name: mariadb-secret
               key: MYSQL_ROOT_PASSWORD
+        - name: MYSQL_DATABASE
+          value: todo_db
         volumeMounts:
         - name: mariadb-storage
           mountPath: /var/lib/mysql
@@ -63,9 +52,9 @@ spec:
         persistentVolumeClaim:
           claimName: mariadb-pvc
 ---
-# -----------------------------
+# ========================================================
 # Service MariaDB (ClusterIP)
-# -----------------------------
+# ========================================================
 apiVersion: v1
 kind: Service
 metadata:
