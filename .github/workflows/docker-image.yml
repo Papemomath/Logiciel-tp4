@@ -25,14 +25,18 @@ jobs:
       run: mvn clean package -DskipTests -Dmaven.test.skip=true
       working-directory: ./src/api
 
+    - name: Set lowercase username
+      id: lowercase
+      run: echo "owner=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
     - name: Log in to GitHub Container Registry
       run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
     - name: Build Docker image
-      run: docker build -t ghcr.io/${{ github.repository_owner }}/logiciel-tp4:${{ github.sha }} -t ghcr.io/${{ github.repository_owner }}/logiciel-tp4:latest ./src/api
+      run: docker build -t ghcr.io/${{ steps.lowercase.outputs.owner }}/logiciel-tp4:${{ github.sha }} -t ghcr.io/${{ steps.lowercase.outputs.owner }}/logiciel-tp4:latest ./src/api
 
     - name: Push Docker image (SHA tag)
-      run: docker push ghcr.io/${{ github.repository_owner }}/logiciel-tp4:${{ github.sha }}
+      run: docker push ghcr.io/${{ steps.lowercase.outputs.owner }}/logiciel-tp4:${{ github.sha }}
 
     - name: Push Docker image (latest tag)
-      run: docker push ghcr.io/${{ github.repository_owner }}/logiciel-tp4:latest
+      run: docker push ghcr.io/${{ steps.lowercase.outputs.owner }}/logiciel-tp4:latest
