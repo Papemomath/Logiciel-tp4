@@ -2,8 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: todo-app
-  namespace: logiciel-tp4
-
+  namespace: tp4
+  labels:
+    app: todo-app
 spec:
   replicas: 2
   selector:
@@ -14,33 +15,18 @@ spec:
       labels:
         app: todo-app
     spec:
-      imagePullSecrets:
-      - name: ghcr-secret
       containers:
       - name: api
         image: ghcr.io/papemomath/logiciel-tp4:latest
-        imagePullPolicy: Always
         ports:
         - containerPort: 8080
+          protocol: TCP
         env:
         - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: mariadb-secret
-              key: MYSQL_ROOT_PASSWORD
-
-        - name: DB_USERNAME
-          value: "root"
-
-        - name: DB_HOST
-          value: "mariadb-service"
-
-        - name: DB_PORT
-          value: "3306"
-
-        - name: DB_NAME
-          value: "todo_db"
-
+              name: db-secret
+              key: DB_PASSWORD
         volumeMounts:
         - name: data-storage
           mountPath: /data
