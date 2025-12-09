@@ -16,9 +16,6 @@ COPY --from=build /app/target/*.jar app.jar
 # Créer le répertoire pour la base de données persistante
 RUN mkdir -p /data
 
-# Variable d'environnement pour le mot de passe
-ENV DB_PASSWORD="1234"
-
 # Exposer le port
 EXPOSE 8080
 
