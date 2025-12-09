@@ -19,7 +19,7 @@ spec:
       - name: api
         image: ghcr.io/papemomath/logiciel-tp4:latest
         ports:
-        - containerPort: 8080
+        - containerPort: 8080 
           protocol: TCP
         env:
         - name: DB_PASSWORD
