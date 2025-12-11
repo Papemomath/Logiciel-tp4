@@ -1,7 +1,5 @@
 package com.mariadb.todo.domain;
-
-
-import jakarta.persistence.*;
+import javax.persistence.*;
 
 @Entity
 @Table(name = "tasks")

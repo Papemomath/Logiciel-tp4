@@ -1,23 +1,28 @@
-# Étape 1 : Build avec Java 21
-FROM maven:3.9.9-eclipse-temurin-21 AS build
+# ---- STAGE 1 : Build ----
+FROM maven:3.9.6-eclipse-temurin-21 AS build
+
 WORKDIR /app
 
 COPY pom.xml .
-COPY src ./src
-RUN mvn clean package -DskipTests -Dmaven.test.skip=true
+RUN mvn -q dependency:resolve
 
-# Étape 2 : Image finale pour exécution avec Java 21
-FROM eclipse-temurin:21-jre-alpine
+COPY src ./src
+
+RUN mvn -q clean package -DskipTests
+
+# ---- STAGE 2 : Run ----
+FROM eclipse-temurin:21-jdk-alpine
+
 WORKDIR /app
 
-# Copier le JAR compilé
 COPY --from=build /app/target/*.jar app.jar
 
-# Créer le répertoire pour la base de données persistante
-RUN mkdir -p /data
-
-# Exposer le port
 EXPOSE 8080
 
-# Lancer l'application
+# Environment variables
+ENV DB_USERNAME="root" \
+    DB_PASSWORD="1234" \
+    DB_NAME="tododb" \
+    DB_HOST="mariadb-service"
+
 ENTRYPOINT ["java", "-jar", "app.jar"]
