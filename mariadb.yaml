@@ -1,0 +1,84 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mariadb-secret
+  namespace: etudiant04-ns
+type: Opaque
+data:
+  mariadb-root-password: MTIzNA==
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mariadb-initdb
+  namespace: etudiant04-ns
+data:
+  init.sql: |
+    CREATE DATABASE IF NOT EXISTS tododb;
+    USE tododb;
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mariadb-pvc
+  namespace: etudiant04-ns
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mariadb
+  namespace: etudiant04-ns
+  labels:
+    app: mariadb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mariadb
+  template:
+    metadata:
+      labels:
+        app: mariadb
+    spec:
+      containers:
+      - name: mariadb
+        image: mariadb:10.6
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mariadb-secret
+              key: mariadb-root-password
+        ports:
+        - containerPort: 3306
+        volumeMounts:
+        - name: mariadb-storage
+          mountPath: /var/lib/mysql
+        - name: mariadb-initdb
+          mountPath: /docker-entrypoint-initdb.d
+      volumes:
+      - name: mariadb-storage
+        persistentVolumeClaim:
+          claimName: mariadb-pvc
+      - name: mariadb-initdb
+        configMap:
+          name: mariadb-initdb
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mariadb-service
+  namespace: etudiant04-ns
+spec:
+  selector:
+    app: mariadb
+  ports:
+  - port: 3306
+    targetPort: 3306

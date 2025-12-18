@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: todo-app
-  namespace: tp4
+  namespace: etudiant04-ns
   labels:
     app: todo-app
 spec:
@@ -19,17 +19,29 @@ spec:
       - name: api
         image: ghcr.io/papemomath/logiciel-tp4:latest
         ports:
-        - containerPort: 8080 
+        - containerPort: 8080
           protocol: TCP
+
         env:
         - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
               name: db-secret
               key: DB_PASSWORD
+
+        - name: DB_USERNAME
+          value: "root"
+
+        - name: DB_NAME
+          value: "tododb"
+
+        - name: DB_HOST
+          value: "mariadb-service"
+
         volumeMounts:
         - name: data-storage
           mountPath: /data
+
         resources:
           requests:
             memory: "256Mi"
@@ -37,6 +49,7 @@ spec:
           limits:
             memory: "512Mi"
             cpu: "500m"
+
       volumes:
       - name: data-storage
         persistentVolumeClaim:
