@@ -18,18 +18,6 @@ data:
     CREATE DATABASE IF NOT EXISTS tododb;
     USE tododb;
 ---
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: mariadb-pvc
-  namespace: etudiant04-ns
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -58,6 +46,13 @@ spec:
               key: mariadb-root-password
         ports:
         - containerPort: 3306
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
         volumeMounts:
         - name: mariadb-storage
           mountPath: /var/lib/mysql
@@ -65,8 +60,7 @@ spec:
           mountPath: /docker-entrypoint-initdb.d
       volumes:
       - name: mariadb-storage
-        persistentVolumeClaim:
-          claimName: mariadb-pvc
+        emptyDir: {}
       - name: mariadb-initdb
         configMap:
           name: mariadb-initdb

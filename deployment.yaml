@@ -1,3 +1,13 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db-secret
+  namespace: etudiant04-ns
+type: Opaque
+data:
+  DB_PASSWORD: MTIzNA== 
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -6,7 +16,7 @@ metadata:
   labels:
     app: todo-app
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: todo-app
@@ -21,36 +31,28 @@ spec:
         ports:
         - containerPort: 8080
           protocol: TCP
-
         env:
         - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
               name: db-secret
               key: DB_PASSWORD
-
         - name: DB_USERNAME
           value: "root"
-
         - name: DB_NAME
           value: "tododb"
-
         - name: DB_HOST
           value: "mariadb-service"
-
         volumeMounts:
         - name: data-storage
           mountPath: /data
-
         resources:
           requests:
-            memory: "256Mi"
-            cpu: "250m"
+            cpu: 100m
+            memory: 128Mi
           limits:
-            memory: "512Mi"
-            cpu: "500m"
-
+            cpu: 200m
+            memory: 256Mi
       volumes:
       - name: data-storage
-        persistentVolumeClaim:
-          claimName: app-pvc
+        emptyDir: {}  
